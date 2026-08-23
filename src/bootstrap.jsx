@@ -3,8 +3,16 @@ import './auth.css';
 
 const root = document.getElementById('root');
 const AUTHORIZED_ROLES = ['master_admin', 'coordinator', 'evaluator'];
+const AUTH_TIMEOUT_MS = 10000;
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[ch]));
+
+function withTimeout(promise, label = 'La solicitud tardó demasiado. No se pudo completar el acceso.') {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(label)), AUTH_TIMEOUT_MS))
+  ]);
+}
 
 function renderLogin(message = '') {
   root.innerHTML = `
@@ -28,25 +36,39 @@ function renderLogin(message = '') {
 
   document.getElementById('login-form').addEventListener('submit', async event => {
     event.preventDefault();
+    if (!supabase) return renderLogin('Supabase no está configurado en este deployment.');
     const email = document.getElementById('email').value.trim().toLowerCase();
     const password = document.getElementById('password').value;
     setBusy('login-btn', true, 'Verificando…');
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const result = await withTimeout(
+        supabase.auth.signInWithPassword({ email, password }),
+        'La conexión con Supabase tardó demasiado. Revisa la configuración de Vercel y vuelve a intentarlo.'
+      );
+      const { data, error } = result;
       if (error) throw error;
       setBusy('login-btn', true, 'Cargando sistema…');
-      await boot(data.session);
+      await withTimeout(boot(data.session), 'La sesión fue validada, pero el sistema tardó demasiado en cargar.');
     } catch (error) {
+      console.error('Login error:', error);
       renderLogin(error?.message || 'No se pudo iniciar sesión.');
     }
   });
 
   document.getElementById('magic-btn').addEventListener('click', async () => {
+    if (!supabase) return renderLogin('Supabase no está configurado en este deployment.');
     const email = document.getElementById('email').value.trim().toLowerCase();
     if (!email) return renderLogin('Escribe primero tu correo electrónico.');
     setBusy('magic-btn', true, 'Enviando…');
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: window.location.origin } });
-    renderLogin(error ? error.message : 'Revisa tu correo. Si tu cuenta ya está autorizada, encontrarás el enlace para entrar.');
+    try {
+      const { error } = await withTimeout(
+        supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: window.location.origin } }),
+        'La solicitud tardó demasiado. Revisa la conexión con Supabase.'
+      );
+      renderLogin(error ? error.message : 'Revisa tu correo. Si tu cuenta ya está autorizada, encontrarás el enlace para entrar.');
+    } catch (error) {
+      renderLogin(error?.message || 'No se pudo enviar el enlace de acceso.');
+    }
   });
 }
 
@@ -64,18 +86,19 @@ async function boot(existingSession = null) {
   try {
     let session = existingSession;
     if (!session) {
-      const { data, error } = await supabase.auth.getSession();
+      const result = await withTimeout(supabase.auth.getSession(), 'No se pudo comprobar la sesión con Supabase.');
+      const { data, error } = result;
       if (error) throw error;
       session = data.session;
     }
 
     if (!session) return renderLogin();
 
-    const { data: staff, error: staffError } = await supabase
-      .from('staff_roles')
-      .select('role')
-      .eq('user_id', session.user.id)
-      .maybeSingle();
+    const result = await withTimeout(
+      supabase.from('staff_roles').select('role').eq('user_id', session.user.id).maybeSingle(),
+      'La sesión existe, pero no se pudo comprobar tu rol. Revisa las políticas de acceso de staff_roles en Supabase.'
+    );
+    const { data: staff, error: staffError } = result;
 
     if (staffError) throw staffError;
     if (!staff || !AUTHORIZED_ROLES.includes(staff.role)) {
@@ -83,8 +106,6 @@ async function boot(existingSession = null) {
       return renderLogin('Tu cuenta está autenticada, pero todavía no tiene un rol autorizado.');
     }
 
-    // The authentication and role checks have succeeded. Load the app without
-    // allowing an import/runtime error to leave the user on an infinite loader.
     try {
       await import('./main.jsx');
     } catch (error) {
