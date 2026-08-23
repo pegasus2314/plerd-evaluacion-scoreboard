@@ -1,0 +1,194 @@
+/* ScoreBoard visual polish — additive only */
+.scoreboard-page,
+.content:has(.scoreboard-hero) {
+  max-width: 1380px;
+}
+
+.scoreboard-page .breadcrumb,
+.content:has(.scoreboard-hero) .breadcrumb {
+  margin-bottom: 10px;
+  font-size: 11px;
+}
+
+.scoreboard-page .page-heading,
+.content:has(.scoreboard-hero) .page-heading {
+  margin-bottom: 28px;
+  align-items: center;
+}
+
+.scoreboard-page .page-heading h1,
+.content:has(.scoreboard-hero) .page-heading h1 {
+  font-size: clamp(28px, 3vw, 38px);
+  letter-spacing: -0.045em;
+  margin-bottom: 7px;
+}
+
+.scoreboard-page .page-heading p,
+.content:has(.scoreboard-hero) .page-heading p {
+  font-size: 13px;
+  color: #667085;
+}
+
+.scoreboard-hero {
+  grid-template-columns: minmax(1.35fr, 1.8fr) repeat(2, minmax(210px, .8fr)) !important;
+  gap: 14px !important;
+  margin-bottom: 22px !important;
+}
+
+.scoreboard-hero > .card,
+.scoreboard-hero .leader-card {
+  min-height: 112px;
+  border-radius: 18px;
+  box-shadow: 0 12px 34px rgba(25, 38, 60, .055);
+}
+
+.scoreboard-hero .leader-card {
+  padding: 24px 26px;
+  background: linear-gradient(135deg, #ffffff 0%, #f3f7ff 100%);
+  border-color: #dce6f8;
+}
+
+.scoreboard-hero .leader-card h3 {
+  font-size: 18px;
+  letter-spacing: -.025em;
+}
+
+.scoreboard-hero .leader-card p,
+.scoreboard-hero .card p {
+  color: #667085;
+  line-height: 1.5;
+}
+
+.scoreboard-hero .card:not(.leader-card) {
+  padding: 21px 22px;
+}
+
+.scoreboard-hero .card strong {
+  font-size: 21px;
+  letter-spacing: -.025em;
+}
+
+.scoreboard-hero .card small {
+  color: #98a2b3;
+}
+
+.table-card {
+  border-radius: 18px !important;
+  border-color: #e2e7ef !important;
+  box-shadow: 0 12px 34px rgba(25, 38, 60, .05) !important;
+  background: rgba(255,255,255,.98) !important;
+}
+
+.table-card table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+.table-card thead th {
+  padding: 15px 18px;
+  background: #f8fafc;
+  color: #667085;
+  border-bottom: 1px solid #e7ebf1;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .055em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table-card thead th:first-child {
+  border-top-left-radius: 18px;
+}
+
+.table-card thead th:last-child {
+  border-top-right-radius: 18px;
+}
+
+.table-card tbody tr {
+  transition: background .18s ease, transform .18s ease;
+}
+
+.table-card tbody tr:hover {
+  background: #f8fbff;
+}
+
+.table-card tbody td {
+  padding: 17px 18px;
+  border-bottom: 1px solid #eef1f5;
+  color: #344054;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+.table-card tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.table-card tbody td:first-child {
+  width: 48px;
+  color: #98a2b3;
+  font-weight: 800;
+}
+
+.table-card tbody td:nth-child(2) {
+  color: #101828;
+  font-weight: 750;
+}
+
+.table-card tbody td:nth-child(3) {
+  color: #667085;
+}
+
+.table-card tbody td:last-child {
+  color: #101828;
+  font-weight: 800;
+}
+
+.table-card .progress,
+.table-card .mini-progress {
+  height: 7px;
+  min-width: 80px;
+  background: #edf1f6;
+}
+
+.table-card .progress i,
+.table-card .mini-progress i {
+  background: linear-gradient(90deg, #2f6fed, #78a1f4);
+}
+
+.scoreboard-hero + .table-card {
+  overflow-x: auto;
+}
+
+@media (max-width: 900px) {
+  .scoreboard-hero {
+    grid-template-columns: 1fr !important;
+  }
+
+  .scoreboard-hero .leader-card {
+    grid-column: auto;
+  }
+
+  .table-card {
+    overflow-x: auto;
+  }
+
+  .table-card table {
+    min-width: 720px;
+  }
+}
+
+@media (max-width: 600px) {
+  .scoreboard-page .page-heading,
+  .content:has(.scoreboard-hero) .page-heading {
+    align-items: flex-start;
+  }
+
+  .scoreboard-hero .leader-card,
+  .scoreboard-hero .card:not(.leader-card) {
+    padding: 18px;
+  }
+}
