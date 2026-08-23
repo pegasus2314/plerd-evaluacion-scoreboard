@@ -31,13 +31,14 @@ function renderLogin(message = '') {
     const email = document.getElementById('email').value.trim().toLowerCase();
     const password = document.getElementById('password').value;
     setBusy('login-btn', true, 'Verificando…');
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      renderLogin(error.message);
-      return;
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      setBusy('login-btn', true, 'Cargando sistema…');
+      await boot(data.session);
+    } catch (error) {
+      renderLogin(error?.message || 'No se pudo iniciar sesión.');
     }
-    setBusy('login-btn', true, 'Cargando sistema…');
-    await boot(data.session);
   });
 
   document.getElementById('magic-btn').addEventListener('click', async () => {
@@ -60,28 +61,40 @@ async function boot(existingSession = null) {
     return;
   }
 
-  let session = existingSession;
-  if (!session) {
-    const { data, error } = await supabase.auth.getSession();
-    if (error) return renderLogin(error.message);
-    session = data.session;
+  try {
+    let session = existingSession;
+    if (!session) {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      session = data.session;
+    }
+
+    if (!session) return renderLogin();
+
+    const { data: staff, error: staffError } = await supabase
+      .from('staff_roles')
+      .select('role')
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+
+    if (staffError) throw staffError;
+    if (!staff || !AUTHORIZED_ROLES.includes(staff.role)) {
+      await supabase.auth.signOut();
+      return renderLogin('Tu cuenta está autenticada, pero todavía no tiene un rol autorizado.');
+    }
+
+    // The authentication and role checks have succeeded. Load the app without
+    // allowing an import/runtime error to leave the user on an infinite loader.
+    try {
+      await import('./main.jsx');
+    } catch (error) {
+      console.error('Error loading application:', error);
+      renderLogin(`La sesión es válida, pero no se pudo cargar el sistema: ${error?.message || 'error desconocido'}`);
+    }
+  } catch (error) {
+    console.error('Authentication bootstrap error:', error);
+    renderLogin(error?.message || 'No se pudo completar el acceso al sistema.');
   }
-
-  if (!session) return renderLogin();
-
-  const { data: staff, error: staffError } = await supabase
-    .from('staff_roles')
-    .select('role')
-    .eq('user_id', session.user.id)
-    .maybeSingle();
-
-  if (staffError) return renderLogin(staffError.message);
-  if (!staff || !AUTHORIZED_ROLES.includes(staff.role)) {
-    await supabase.auth.signOut();
-    return renderLogin('Tu cuenta está autenticada, pero todavía no tiene un rol autorizado.');
-  }
-
-  await import('./main.jsx');
 }
 
 supabase?.auth.onAuthStateChange((_event, session) => {
