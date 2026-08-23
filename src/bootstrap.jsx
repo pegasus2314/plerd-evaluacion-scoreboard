@@ -4,6 +4,7 @@ import './auth.css';
 const root = document.getElementById('root');
 const AUTH_TIMEOUT_MS = 12000;
 let booting = false;
+let appLoaded = false;
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[ch]));
 
@@ -41,7 +42,7 @@ function renderLogin(message = '') {
   form.addEventListener('submit', async event => {
     event.preventDefault();
     if (!isSupabaseConfigured || !supabase) return renderLogin('Supabase no está configurado en este deployment.');
-    if (booting) return;
+    if (booting || appLoaded) return;
 
     const email = document.getElementById('email').value.trim().toLowerCase();
     const password = document.getElementById('password').value;
@@ -55,10 +56,10 @@ function renderLogin(message = '') {
       if (result.error) throw result.error;
       if (!result.data?.session) throw new Error('Supabase autenticó la solicitud, pero no devolvió una sesión.');
 
-      setBusy('login-btn', true, 'Cargando sistema…');
-      await boot(result.data.session);
+      await mountApplication();
     } catch (error) {
       console.error('Login error:', error);
+      booting = false;
       renderLogin(error?.message || 'No se pudo iniciar sesión.');
     }
   });
@@ -88,49 +89,74 @@ function setBusy(id, busy, label) {
   }
 }
 
-async function boot(existingSession = null) {
-  if (booting) return;
+async function mountApplication() {
+  if (appLoaded || booting) return;
   booting = true;
+  const previous = root.innerHTML;
+  try {
+    // La autenticación ya fue validada por Supabase. No hacemos ninguna
+    // consulta adicional a staff_roles que pueda bloquear el arranque.
+    await import('./main.jsx');
+    appLoaded = true;
+    root.removeAttribute('aria-busy');
+  } catch (error) {
+    console.error('Error loading application:', error);
+    root.innerHTML = `
+      <div class="auth-shell">
+        <div class="auth-card">
+          <div class="auth-kicker">ERROR DE CARGA</div>
+          <h1>No se pudo abrir el panel</h1>
+          <p class="auth-copy">La sesión de Supabase es válida, pero la interfaz no pudo iniciar.</p>
+          <div class="auth-message">${escapeHtml(error?.message || 'Error desconocido al cargar la aplicación.')}</div>
+          <button id="retry-btn" type="button">Reintentar</button>
+        </div>
+      </div>`;
+    document.getElementById('retry-btn')?.addEventListener('click', () => {
+      booting = false;
+      appLoaded = false;
+      mountApplication();
+    });
+    root.setAttribute('aria-busy', 'false');
+  } finally {
+    booting = false;
+  }
+  return previous;
+}
+
+async function boot() {
+  if (!isSupabaseConfigured || !supabase) {
+    renderLogin('Supabase no está configurado. Revisa VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en Vercel.');
+    return;
+  }
 
   try {
-    if (!isSupabaseConfigured || !supabase) {
-      renderLogin('Supabase no está configurado. Revisa VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en Vercel.');
-      return;
-    }
-
-    let session = existingSession;
-    if (!session) {
-      const result = await withTimeout(
-        supabase.auth.getSession(),
-        'No se pudo comprobar la sesión con Supabase.'
-      );
-      if (result.error) throw result.error;
-      session = result.data?.session || null;
-    }
+    const result = await withTimeout(
+      supabase.auth.getSession(),
+      'No se pudo comprobar la sesión con Supabase.'
+    );
+    if (result.error) throw result.error;
+    const session = result.data?.session || null;
 
     if (!session) {
       renderLogin();
       return;
     }
 
-    // Supabase ya confirmó una sesión válida. Cargamos el panel directamente;
-    // las tablas y políticas de Supabase siguen protegiendo los datos.
-    try {
-      await import('./main.jsx');
-    } catch (error) {
-      console.error('Error loading application:', error);
-      renderLogin(`La sesión es válida, pero no se pudo cargar el sistema: ${error?.message || 'error desconocido'}`);
-    }
+    await mountApplication();
   } catch (error) {
     console.error('Authentication bootstrap error:', error);
     renderLogin(error?.message || 'No se pudo completar el acceso al sistema.');
-  } finally {
-    booting = false;
   }
 }
 
+// Solo reaccionamos al cierre de sesión. Nunca iniciamos el panel desde
+// SIGNED_IN para evitar ejecuciones duplicadas durante signInWithPassword().
 supabase?.auth.onAuthStateChange((event) => {
-  if (event === 'SIGNED_OUT' && !booting) renderLogin();
+  if (event === 'SIGNED_OUT') {
+    appLoaded = false;
+    booting = false;
+    renderLogin();
+  }
 });
 
 boot();
