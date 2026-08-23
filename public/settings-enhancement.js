@@ -1,96 +1,13 @@
 (() => {
   const KEY = 'r17-settings-v1';
-  const defaults = { theme: 'system', density: 'comfortable', animations: true, showStats: true, showPositions: true, showAverages: true, showProgress: true, order: 'score' };
+  const defaults = { theme: 'light', density: 'comfortable', animations: true, showStats: true, showPositions: true, showAverages: true, showProgress: true, order: 'score' };
   const load = () => { try { return { ...defaults, ...(JSON.parse(localStorage.getItem(KEY) || '{}')) }; } catch { return { ...defaults }; } };
   const save = (settings) => { localStorage.setItem(KEY, JSON.stringify(settings)); apply(settings); render(); };
   let settings = load();
-
-  function apply(s) {
-    document.documentElement.dataset.r17Theme = s.theme;
-    document.documentElement.dataset.r17Density = s.density;
-    document.documentElement.dataset.r17Animations = s.animations ? 'on' : 'off';
-    document.documentElement.dataset.r17ShowStats = s.showStats ? 'on' : 'off';
-    document.documentElement.dataset.r17ShowPositions = s.showPositions ? 'on' : 'off';
-    document.documentElement.dataset.r17ShowAverages = s.showAverages ? 'on' : 'off';
-    document.documentElement.dataset.r17ShowProgress = s.showProgress ? 'on' : 'off';
-  }
-
-  function option(label, value, options, key) {
-    const wrap = document.createElement('label'); wrap.className = 'r17-setting-control';
-    const title = document.createElement('span'); title.textContent = label;
-    const select = document.createElement('select');
-    options.forEach(([v, text]) => { const o = document.createElement('option'); o.value = v; o.textContent = text; select.appendChild(o); });
-    select.value = value;
-    select.addEventListener('change', () => { settings[key] = select.value; save(settings); });
-    wrap.append(title, select); return wrap;
-  }
-
-  function toggle(label, key) {
-    const wrap = document.createElement('label'); wrap.className = 'r17-setting-toggle';
-    const text = document.createElement('span'); text.textContent = label;
-    const input = document.createElement('input'); input.type = 'checkbox'; input.checked = !!settings[key];
-    input.addEventListener('change', () => { settings[key] = input.checked; save(settings); });
-    const visual = document.createElement('i'); wrap.append(text, input, visual); return wrap;
-  }
-
-  function card(title, description, controls) {
-    const el = document.createElement('div'); el.className = 'r17-settings-card';
-    const head = document.createElement('div'); head.className = 'r17-settings-card-head';
-    const h = document.createElement('h3'); h.textContent = title;
-    const p = document.createElement('p'); p.textContent = description;
-    head.append(h, p); el.appendChild(head);
-    const body = document.createElement('div'); body.className = 'r17-settings-card-body'; controls.forEach(c => body.appendChild(c)); el.appendChild(body); return el;
-  }
-
-  function render() {
-    const heading = [...document.querySelectorAll('h1')].find(x => x.textContent.trim() === 'Configuración');
-    if (!heading) return;
-    const section = heading.closest('section'); if (!section) return;
-    const grid = section.querySelector('.grid-eval'); if (!grid) return;
-    if (grid.dataset.r17Enhanced === '1') return;
-    grid.dataset.r17Enhanced = '1';
-    const left = grid.querySelector('.eval-card'); if (!left) return;
-    const list = left.querySelector('.settings-list');
-    if (list) list.remove();
-    const oldTitle = left.querySelector('.section-title');
-    if (oldTitle) oldTitle.remove();
-    const title = document.createElement('div'); title.className = 'r17-settings-title';
-    const h = document.createElement('h2'); h.textContent = 'Centro de configuración';
-    const p = document.createElement('p'); p.textContent = 'Personaliza la experiencia del ScoreBoard sin modificar los datos de evaluación.';
-    title.append(h, p); left.prepend(title);
-
-    const cards = document.createElement('div'); cards.className = 'r17-settings-grid';
-    cards.append(
-      card('🎨 Apariencia', 'Tema, densidad y movimiento de la interfaz.', [
-        option('Tema', settings.theme, [['system','Automático'],['light','Claro'],['dark','Oscuro']], 'theme'),
-        option('Densidad', settings.density, [['comfortable','Cómoda'],['compact','Compacta']], 'density'),
-        toggle('Animaciones suaves', 'animations')
-      ]),
-      card('🏆 ScoreBoard', 'Controla qué información aparece en la pantalla de resultados.', [
-        toggle('Mostrar estadísticas superiores', 'showStats'),
-        toggle('Mostrar posiciones', 'showPositions'),
-        toggle('Mostrar promedios', 'showAverages'),
-        toggle('Mostrar barras de progreso', 'showProgress'),
-        option('Orden del ranking', settings.order, [['score','Mayor puntuación'],['name','Nombre']], 'order')
-      ]),
-      card('📊 Visualización', 'Ajustes rápidos para una presentación limpia.', [
-        toggle('Estadísticas visibles', 'showStats'),
-        toggle('Barras de desempeño', 'showProgress'),
-        toggle('Animaciones', 'animations')
-      ])
-    );
-    left.appendChild(cards);
-
-    const summary = grid.querySelector('.summary');
-    if (summary) {
-      const hint = summary.querySelector('.hint'); if (hint) hint.textContent = 'Tus preferencias se guardan localmente en este navegador y se aplican al ScoreBoard automáticamente.';
-      const total = summary.querySelector('.summary-total'); if (total) { const strong = total.querySelector('strong'); const small = total.querySelector('small'); if (strong) strong.textContent = 'ACTIVO'; if (small) small.textContent = 'PREFERENCIAS'; }
-    }
-  }
-
-  apply(settings);
-  const observer = new MutationObserver(() => { if (document.visibilityState !== 'hidden') render(); });
-  observer.observe(document.body, { childList: true, subtree: true });
-  document.addEventListener('click', () => setTimeout(render, 0));
-  window.addEventListener('storage', () => { settings = load(); apply(settings); render(); });
+  function apply(s) { document.documentElement.dataset.r17Theme = s.theme; document.documentElement.dataset.r17Density = s.density; document.documentElement.dataset.r17Animations = s.animations ? 'on' : 'off'; document.documentElement.dataset.r17ShowStats = s.showStats ? 'on' : 'off'; document.documentElement.dataset.r17ShowPositions = s.showPositions ? 'on' : 'off'; document.documentElement.dataset.r17ShowAverages = s.showAverages ? 'on' : 'off'; document.documentElement.dataset.r17ShowProgress = s.showProgress ? 'on' : 'off'; }
+  function option(label, value, options, key) { const wrap = document.createElement('label'); wrap.className = 'r17-setting-control'; const title = document.createElement('span'); title.textContent = label; const select = document.createElement('select'); options.forEach(([v, text]) => { const o = document.createElement('option'); o.value = v; o.textContent = text; select.appendChild(o); }); select.value = value; select.addEventListener('change', () => { settings[key] = select.value; save(settings); }); wrap.append(title, select); return wrap; }
+  function toggle(label, key) { const wrap = document.createElement('label'); wrap.className = 'r17-setting-toggle'; const text = document.createElement('span'); text.textContent = label; const input = document.createElement('input'); input.type = 'checkbox'; input.checked = !!settings[key]; input.addEventListener('change', () => { settings[key] = input.checked; save(settings); }); const visual = document.createElement('i'); wrap.append(text, input, visual); return wrap; }
+  function card(title, description, controls) { const el = document.createElement('div'); el.className = 'r17-settings-card'; const head = document.createElement('div'); head.className = 'r17-settings-card-head'; const h = document.createElement('h3'); h.textContent = title; const p = document.createElement('p'); p.textContent = description; head.append(h, p); el.appendChild(head); const body = document.createElement('div'); body.className = 'r17-settings-card-body'; controls.forEach(c => body.appendChild(c)); el.appendChild(body); return el; }
+  function render() { const heading = [...document.querySelectorAll('h1')].find(x => x.textContent.trim() === 'Configuración'); if (!heading) return; const section = heading.closest('section'); if (!section) return; const grid = section.querySelector('.grid-eval'); if (!grid || grid.dataset.r17Enhanced === '1') return; grid.dataset.r17Enhanced = '1'; const left = grid.querySelector('.eval-card'); if (!left) return; const list = left.querySelector('.settings-list'); if (list) list.remove(); const oldTitle = left.querySelector('.section-title'); if (oldTitle) oldTitle.remove(); const title = document.createElement('div'); title.className = 'r17-settings-title'; const h = document.createElement('h2'); h.textContent = 'Centro de configuración'; const p = document.createElement('p'); p.textContent = 'Personaliza la experiencia del ScoreBoard sin modificar los datos de evaluación.'; title.append(h, p); left.prepend(title); const cards = document.createElement('div'); cards.className = 'r17-settings-grid'; cards.append(card('🎨 Apariencia', 'Tema, densidad y movimiento de la interfaz.', [option('Tema', settings.theme, [['system','Automático'],['light','Claro'],['dark','Oscuro']], 'theme'), option('Densidad', settings.density, [['comfortable','Cómoda'],['compact','Compacta']], 'density'), toggle('Animaciones suaves', 'animations')]), card('🏆 ScoreBoard', 'Controla qué información aparece en la pantalla de resultados.', [toggle('Mostrar estadísticas superiores', 'showStats'), toggle('Mostrar posiciones', 'showPositions'), toggle('Mostrar promedios', 'showAverages'), toggle('Mostrar barras de progreso', 'showProgress'), option('Orden del ranking', settings.order, [['score','Mayor puntuación'],['name','Nombre']], 'order')]), card('📊 Visualización', 'Ajustes rápidos para una presentación limpia.', [toggle('Estadísticas visibles', 'showStats'), toggle('Barras de desempeño', 'showProgress'), toggle('Animaciones', 'animations')])); left.appendChild(cards); const summary = grid.querySelector('.summary'); if (summary) { const hint = summary.querySelector('.hint'); if (hint) hint.textContent = 'Tus preferencias se guardan localmente en este navegador y se aplican al ScoreBoard automáticamente.'; const total = summary.querySelector('.summary-total'); if (total) { const strong = total.querySelector('strong'); const small = total.querySelector('small'); if (strong) strong.textContent = 'ACTIVO'; if (small) small.textContent = 'PREFERENCIAS'; } } }
+  apply(settings); const observer = new MutationObserver(() => { if (document.visibilityState !== 'hidden') render(); }); observer.observe(document.body, { childList: true, subtree: true }); document.addEventListener('click', () => setTimeout(render, 0)); window.addEventListener('storage', () => { settings = load(); apply(settings); render(); });
 })();
