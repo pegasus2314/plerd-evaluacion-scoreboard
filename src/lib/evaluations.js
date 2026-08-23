@@ -15,7 +15,7 @@ async function requireStaff() {
   const session = await requireSession();
   const { data, error } = await db.from('staff_roles').select('role').eq('user_id', session.user.id).maybeSingle();
   if (error) throw error;
-  if (!data || !['coordinator', 'evaluator'].includes(data.role)) throw new Error('Tu cuenta está autenticada, pero no tiene permisos de coordinador o evaluador.');
+  if (!data || !['coordinator', 'evaluator', 'master_admin'].includes(data.role)) throw new Error('Tu cuenta está autenticada, pero no tiene permisos de coordinador, evaluador o Master Admin.');
   return { db, session, role: data.role };
 }
 
