@@ -1,8 +1,8 @@
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 import './auth.css';
 
-const MASTER_EMAIL = 'itsalberthjesus@gmail.com';
 const root = document.getElementById('root');
+const AUTHORIZED_ROLES = ['master_admin', 'coordinator', 'evaluator'];
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[ch]));
 
@@ -22,11 +22,6 @@ function renderLogin(message = '') {
         </form>
         <div class="auth-divider"><span>o</span></div>
         <button id="magic-btn" class="auth-secondary">Enviar enlace de acceso</button>
-        <div class="auth-master-box">
-          <strong>Primer acceso del Master Admin</strong>
-          <p>Si todavía no existe tu cuenta, puedes crearla únicamente con el correo maestro autorizado.</p>
-          <button id="master-btn" class="auth-link">Crear acceso Master Admin</button>
-        </div>
         <small class="auth-foot">Acceso protegido por Supabase Auth y roles de la base de datos.</small>
       </div>
     </div>`;
@@ -35,13 +30,14 @@ function renderLogin(message = '') {
     event.preventDefault();
     const email = document.getElementById('email').value.trim().toLowerCase();
     const password = document.getElementById('password').value;
-    setBusy('login-btn', true, 'Entrando…');
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setBusy('login-btn', true, 'Verificando…');
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       renderLogin(error.message);
       return;
     }
-    await boot();
+    setBusy('login-btn', true, 'Cargando sistema…');
+    await boot(data.session);
   });
 
   document.getElementById('magic-btn').addEventListener('click', async () => {
@@ -51,39 +47,36 @@ function renderLogin(message = '') {
     const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: window.location.origin } });
     renderLogin(error ? error.message : 'Revisa tu correo. Si tu cuenta ya está autorizada, encontrarás el enlace para entrar.');
   });
-
-  document.getElementById('master-btn').addEventListener('click', async () => {
-    setBusy('master-btn', true, 'Creando…');
-    const password = window.prompt('Crea una contraseña para el Master Admin (mínimo 8 caracteres):');
-    if (!password || password.length < 8) return renderLogin('La contraseña debe tener al menos 8 caracteres.');
-    const { error } = await supabase.auth.signUp({ email: MASTER_EMAIL, password, options: { data: { full_name: 'Albert Jesús Silvestre' }, emailRedirectTo: window.location.origin } });
-    renderLogin(error ? error.message : 'Cuenta maestra creada. Revisa tu correo para confirmar la cuenta y luego inicia sesión.');
-  });
 }
 
 function setBusy(id, busy, label) {
   const button = document.getElementById(id);
-  if (button) { button.disabled = busy; if (busy) button.textContent = label; }
+  if (button) { button.disabled = busy; if (label) button.textContent = label; }
 }
 
-async function boot() {
+async function boot(existingSession = null) {
   if (!isSupabaseConfigured) {
     root.innerHTML = '<div class="auth-shell"><div class="auth-card"><h1>Supabase no configurado</h1><p>Revisa VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en Vercel.</p></div></div>';
     return;
   }
 
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError) return renderLogin(sessionError.message);
-  if (!sessionData.session) return renderLogin();
+  let session = existingSession;
+  if (!session) {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) return renderLogin(error.message);
+    session = data.session;
+  }
+
+  if (!session) return renderLogin();
 
   const { data: staff, error: staffError } = await supabase
     .from('staff_roles')
     .select('role')
-    .eq('user_id', sessionData.session.user.id)
+    .eq('user_id', session.user.id)
     .maybeSingle();
 
   if (staffError) return renderLogin(staffError.message);
-  if (!staff || !['master_admin', 'coordinator', 'evaluator'].includes(staff.role)) {
+  if (!staff || !AUTHORIZED_ROLES.includes(staff.role)) {
     await supabase.auth.signOut();
     return renderLogin('Tu cuenta está autenticada, pero todavía no tiene un rol autorizado.');
   }
