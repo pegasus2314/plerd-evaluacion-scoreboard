@@ -3,19 +3,21 @@ import './auth.css';
 
 const root = document.getElementById('root');
 const AUTHORIZED_ROLES = ['master_admin', 'coordinator', 'evaluator'];
+const AUTH_TIMEOUT_MS = 10000;
 let booting = false;
-let loginListenersReady = false;
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[ch]));
 
-function withTimeout(promise, ms, message = 'La conexión tardó demasiado. Comprueba tu conexión y vuelve a intentarlo.') {
+function withTimeout(promise, label = 'La solicitud tardó demasiado. No se pudo completar el acceso.') {
+  let timer;
   return Promise.race([
     promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error(message)), ms))
-  ]);
+    new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(label)), AUTH_TIMEOUT_MS); })
+  ]).finally(() => clearTimeout(timer));
 }
 
 function renderLogin(message = '') {
+  booting = false;
   root.innerHTML = `
     <div class="auth-shell">
       <div class="auth-card">
@@ -41,19 +43,20 @@ function renderLogin(message = '') {
 
   form.addEventListener('submit', async event => {
     event.preventDefault();
+    if (booting) return;
     if (!isSupabaseConfigured || !supabase) return renderLogin('Supabase no está configurado en este deployment.');
+
     const email = document.getElementById('email').value.trim().toLowerCase();
     const password = document.getElementById('password').value;
     setBusy('login-btn', true, 'Verificando…');
+
     try {
       const result = await withTimeout(
         supabase.auth.signInWithPassword({ email, password }),
-        12000,
-        'Supabase no respondió a tiempo. Revisa Vercel y las variables VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY.'
+        'La conexión con Supabase tardó demasiado. Revisa la configuración de Vercel y vuelve a intentarlo.'
       );
       if (result.error) throw result.error;
       if (!result.data?.session) throw new Error('Supabase autenticó la solicitud, pero no devolvió una sesión.');
-      setBusy('login-btn', true, 'Cargando sistema…');
       await boot(result.data.session);
     } catch (error) {
       console.error('Login error:', error);
@@ -69,22 +72,18 @@ function renderLogin(message = '') {
     try {
       const result = await withTimeout(
         supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: window.location.origin } }),
-        12000,
-        'Supabase no respondió a tiempo al enviar el enlace.'
+        'La solicitud tardó demasiado. Revisa la conexión con Supabase.'
       );
       renderLogin(result.error ? result.error.message : 'Revisa tu correo. Si tu cuenta ya está autorizada, encontrarás el enlace para entrar.');
     } catch (error) {
-      renderLogin(error?.message || 'No se pudo enviar el enlace.');
+      renderLogin(error?.message || 'No se pudo enviar el enlace de acceso.');
     }
   });
 }
 
 function setBusy(id, busy, label) {
   const button = document.getElementById(id);
-  if (button) {
-    button.disabled = busy;
-    if (label) button.textContent = label;
-  }
+  if (button) { button.disabled = busy; if (label) button.textContent = label; }
 }
 
 async function boot(existingSession = null) {
@@ -99,11 +98,7 @@ async function boot(existingSession = null) {
 
     let session = existingSession;
     if (!session) {
-      const result = await withTimeout(
-        supabase.auth.getSession(),
-        10000,
-        'No se pudo comprobar la sesión con Supabase.'
-      );
+      const result = await withTimeout(supabase.auth.getSession(), 'No se pudo comprobar la sesión con Supabase.');
       if (result.error) throw result.error;
       session = result.data?.session || null;
     }
@@ -113,27 +108,24 @@ async function boot(existingSession = null) {
       return;
     }
 
-    const staffResult = await withTimeout(
+    const result = await withTimeout(
       supabase.from('staff_roles').select('role').eq('user_id', session.user.id).maybeSingle(),
-      10000,
-      'No se pudo comprobar tu rol de acceso en Supabase.'
+      'La sesión existe, pero no se pudo comprobar tu rol. Revisa las políticas de acceso de staff_roles en Supabase.'
     );
+    if (result.error) throw result.error;
 
-    if (staffResult.error) throw staffResult.error;
-    const staff = staffResult.data;
-
+    const staff = result.data;
     if (!staff || !AUTHORIZED_ROLES.includes(staff.role)) {
-      await withTimeout(supabase.auth.signOut(), 8000, 'No se pudo cerrar la sesión.');
+      try { await withTimeout(supabase.auth.signOut(), 'No se pudo cerrar la sesión.'); } catch {}
       renderLogin('Tu cuenta está autenticada, pero todavía no tiene un rol autorizado.');
       return;
     }
 
-    try {
-      await import('./main.jsx');
-    } catch (error) {
-      console.error('Error loading application:', error);
-      renderLogin(`La sesión es válida, pero no se pudo cargar el sistema: ${error?.message || 'error desconocido'}`);
-    }
+    setBusy('login-btn', true, 'Cargando sistema…');
+    await withTimeout(
+      import('./main.jsx'),
+      'La sesión es válida, pero la aplicación tardó demasiado en cargarse. Recarga la página e inténtalo de nuevo.'
+    );
   } catch (error) {
     console.error('Authentication bootstrap error:', error);
     renderLogin(error?.message || 'No se pudo completar el acceso al sistema.');
@@ -142,12 +134,6 @@ async function boot(existingSession = null) {
   }
 }
 
-if (supabase && !loginListenersReady) {
-  loginListenersReady = true;
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_OUT' && !booting) renderLogin();
-    if (event === 'SIGNED_IN' && session && !booting) boot(session);
-  });
-}
-
+// El login se controla desde un único flujo. No se vuelve a ejecutar boot()
+// desde SIGNED_IN, evitando carreras entre el formulario y el listener de Auth.
 boot();
