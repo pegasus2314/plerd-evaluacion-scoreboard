@@ -3,16 +3,29 @@ import './auth.css';
 
 const root = document.getElementById('root');
 const AUTH_TIMEOUT_MS = 12000;
+const APP_LOAD_TIMEOUT_MS = 8000;
 let booting = false;
 let appLoaded = false;
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[ch]));
 
-function withTimeout(promise, message = 'La solicitud tardó demasiado. Comprueba tu conexión y vuelve a intentarlo.') {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error(message)), AUTH_TIMEOUT_MS))
-  ]);
+function withTimeout(promise, ms, message = 'La solicitud tardó demasiado. Comprueba tu conexión y vuelve a intentarlo.') {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(message)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
+function ensureLightStartup() {
+  try {
+    const raw = localStorage.getItem('r17-settings-v1');
+    if (!raw) {
+      localStorage.setItem('r17-settings-v1', JSON.stringify({ theme: 'light' }));
+    }
+  } catch { /* localStorage can be unavailable in private contexts */ }
+  document.documentElement.dataset.r17Theme = 'light';
+  document.documentElement.style.colorScheme = 'light';
 }
 
 function renderLogin(message = '') {
@@ -51,11 +64,13 @@ function renderLogin(message = '') {
     try {
       const result = await withTimeout(
         supabase.auth.signInWithPassword({ email, password }),
+        AUTH_TIMEOUT_MS,
         'Supabase no respondió a tiempo. Revisa Vercel y las variables VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY.'
       );
       if (result.error) throw result.error;
       if (!result.data?.session) throw new Error('Supabase autenticó la solicitud, pero no devolvió una sesión.');
 
+      setBusy('login-btn', true, 'Cargando sistema…');
       await mountApplication();
     } catch (error) {
       console.error('Login error:', error);
@@ -72,6 +87,7 @@ function renderLogin(message = '') {
     try {
       const result = await withTimeout(
         supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: window.location.origin } }),
+        AUTH_TIMEOUT_MS,
         'Supabase no respondió a tiempo al enviar el enlace.'
       );
       renderLogin(result.error ? result.error.message : 'Revisa tu correo. Si tu cuenta ya está autorizada, encontrarás el enlace para entrar.');
@@ -92,11 +108,28 @@ function setBusy(id, busy, label) {
 async function mountApplication() {
   if (appLoaded || booting) return;
   booting = true;
-  const previous = root.innerHTML;
+  root.setAttribute('aria-busy', 'true');
+  root.innerHTML = `
+    <div class="auth-shell">
+      <div class="auth-card">
+        <div class="auth-kicker">REGIONAL 17</div>
+        <h1>Cargando sistema…</h1>
+        <p class="auth-copy">Estamos preparando tu panel de evaluación.</p>
+      </div>
+    </div>`;
+
   try {
-    // La autenticación ya fue validada por Supabase. No hacemos ninguna
-    // consulta adicional a staff_roles que pueda bloquear el arranque.
-    await import('./main.jsx');
+    await withTimeout(
+      import('./main.jsx'),
+      APP_LOAD_TIMEOUT_MS,
+      'La interfaz no terminó de cargar. Abre la consola del navegador para ver el error de JavaScript.'
+    );
+
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    if (!root.querySelector('.app-shell')) {
+      throw new Error('React cargó, pero el panel no se montó en #root.');
+    }
+
     appLoaded = true;
     root.removeAttribute('aria-busy');
   } catch (error) {
@@ -112,18 +145,19 @@ async function mountApplication() {
         </div>
       </div>`;
     document.getElementById('retry-btn')?.addEventListener('click', () => {
-      booting = false;
       appLoaded = false;
+      booting = false;
       mountApplication();
     });
     root.setAttribute('aria-busy', 'false');
   } finally {
     booting = false;
   }
-  return previous;
 }
 
 async function boot() {
+  ensureLightStartup();
+
   if (!isSupabaseConfigured || !supabase) {
     renderLogin('Supabase no está configurado. Revisa VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en Vercel.');
     return;
@@ -132,6 +166,7 @@ async function boot() {
   try {
     const result = await withTimeout(
       supabase.auth.getSession(),
+      AUTH_TIMEOUT_MS,
       'No se pudo comprobar la sesión con Supabase.'
     );
     if (result.error) throw result.error;
@@ -149,12 +184,11 @@ async function boot() {
   }
 }
 
-// Solo reaccionamos al cierre de sesión. Nunca iniciamos el panel desde
-// SIGNED_IN para evitar ejecuciones duplicadas durante signInWithPassword().
 supabase?.auth.onAuthStateChange((event) => {
   if (event === 'SIGNED_OUT') {
     appLoaded = false;
     booting = false;
+    ensureLightStartup();
     renderLogin();
   }
 });
