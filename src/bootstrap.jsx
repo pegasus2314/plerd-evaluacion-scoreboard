@@ -83,6 +83,8 @@ async function boot(existingSession = null) {
       return renderLogin('Tu cuenta está autenticada, pero todavía no tiene un rol autorizado.');
     }
 
+    // The authentication and role checks have succeeded. Load the app without
+    // allowing an import/runtime error to leave the user on an infinite loader.
     try {
       await import('./main.jsx');
     } catch (error) {
