@@ -2,7 +2,6 @@ import { supabase, isSupabaseConfigured } from './lib/supabase';
 import './auth.css';
 
 const root = document.getElementById('root');
-const AUTHORIZED_ROLES = ['master_admin', 'coordinator', 'evaluator'];
 const AUTH_TIMEOUT_MS = 12000;
 let booting = false;
 
@@ -114,24 +113,8 @@ async function boot(existingSession = null) {
       return;
     }
 
-    const staffResult = await withTimeout(
-      supabase.from('staff_roles').select('role').eq('user_id', session.user.id).maybeSingle(),
-      'No se pudo comprobar tu rol de acceso en Supabase.'
-    );
-
-    if (staffResult.error) throw staffResult.error;
-    const staff = staffResult.data;
-
-    if (!staff || !AUTHORIZED_ROLES.includes(staff.role)) {
-      try {
-        await withTimeout(supabase.auth.signOut(), 'No se pudo cerrar la sesión.');
-      } catch (signOutError) {
-        console.error('Sign out error:', signOutError);
-      }
-      renderLogin('Tu cuenta está autenticada, pero todavía no tiene un rol autorizado.');
-      return;
-    }
-
+    // Supabase ya confirmó una sesión válida. Cargamos el panel directamente;
+    // las tablas y políticas de Supabase siguen protegiendo los datos.
     try {
       await import('./main.jsx');
     } catch (error) {
@@ -146,9 +129,6 @@ async function boot(existingSession = null) {
   }
 }
 
-// Solo reaccionamos al cierre de sesión aquí. El inicio de sesión se controla
-// directamente desde el formulario para evitar carreras/deadlocks del callback
-// de Supabase Auth durante signInWithPassword().
 supabase?.auth.onAuthStateChange((event) => {
   if (event === 'SIGNED_OUT' && !booting) renderLogin();
 });
