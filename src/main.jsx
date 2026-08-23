@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BarChart3, ChevronDown, ClipboardCheck, Menu, Search, Settings, Trophy, Users, CheckCircle2, Circle, UserPlus, Pencil, Trash2, X } from 'lucide-react';
 import './styles.css';
+import './delegates.css';
 import { RUBRIC, RUBRIC_TOTAL, emptyScores } from './data/rubric';
 import { listDelegates, createDelegate, updateDelegate, deleteDelegate, listCommissions, listEvaluations, saveEvaluation, setDelegateAttendance } from './lib/evaluations';
 
