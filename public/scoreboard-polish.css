@@ -32,7 +32,6 @@
   font-size: 14px;
 }
 
-/* KPI cards — deliberately stronger than the old generic stats */
 .content:has(.table-card) .stats {
   display: grid;
   grid-template-columns: 1.35fr 1fr 1fr;
@@ -104,7 +103,6 @@
   letter-spacing: -.035em;
 }
 
-/* Main ranking surface */
 .content:has(.table-card) .table-card {
   padding: 0 !important;
   overflow: hidden;
@@ -133,11 +131,7 @@
   text-align: left;
 }
 
-.content:has(.table-card) .table-card thead th:first-child {
-  width: 62px;
-  text-align: center;
-}
-
+.content:has(.table-card) .table-card thead th:first-child { width: 62px; text-align: center; }
 .content:has(.table-card) .table-card thead th:nth-child(2) { width: 28%; }
 .content:has(.table-card) .table-card thead th:nth-child(3) { width: 20%; }
 .content:has(.table-card) .table-card thead th:nth-child(4) { width: 13%; }
@@ -153,157 +147,26 @@
 }
 
 .content:has(.table-card) .table-card tbody tr:last-child td { border-bottom: 0; }
-
-.content:has(.table-card) .table-card tbody tr {
-  transition: background .16s ease;
-}
-
-.content:has(.table-card) .table-card tbody tr:hover {
-  background: #f8fbff;
-}
-
-.content:has(.table-card) .table-card tbody td:first-child {
-  color: #98a2b3;
-  text-align: center;
-  font-weight: 850;
-}
-
-.content:has(.table-card) .table-card tbody td:nth-child(2) {
-  color: #101828;
-  font-weight: 800;
-}
-
+.content:has(.table-card) .table-card tbody tr { transition: background .16s ease; }
+.content:has(.table-card) .table-card tbody tr:hover { background: #f8fbff; }
+.content:has(.table-card) .table-card tbody td:first-child { color: #98a2b3; text-align: center; font-weight: 850; }
+.content:has(.table-card) .table-card tbody td:nth-child(2) { color: #101828; font-weight: 800; }
 .content:has(.table-card) .table-card tbody td:nth-child(3) { color: #667085; }
-
-/* Ranking number + leader emphasis */
-.content:has(.table-card) .table-card tbody tr:first-child td:first-child {
-  color: #6941c6;
-  font-size: 15px;
-}
-
-.content:has(.table-card) .table-card tbody tr:first-child td:nth-child(2) {
-  font-size: 13px;
-}
-
-.content:has(.table-card) .mini-progress {
-  width: 100%;
-  min-width: 100px;
-  height: 8px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: #e9eef5;
-}
-
-.content:has(.table-card) .mini-progress i {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #2f6fed 0%, #7aa4f7 100%);
-  box-shadow: 0 2px 8px rgba(47,111,237,.22);
-}
-
-.content:has(.table-card) .table-card tbody td:last-child {
-  color: #101828;
-  font-weight: 850;
-  white-space: nowrap;
-}
-
-.content:has(.table-card) .table-card tbody td:last-child small {
-  color: #98a2b3;
-  font-weight: 700;
-}
-
-.content:has(.table-card) .history-empty {
-  min-height: 230px;
-  display: grid;
-  place-items: center;
-  padding: 40px;
-  color: #667085;
-  font-size: 13px;
-  text-align: center;
-}
-
-/* Dark mode */
-.dark-mode .content:has(.table-card) .page-heading p,
-.dark .content:has(.table-card) .page-heading p {
-  color: #98a2b3;
-}
-
-.dark-mode .content:has(.table-card) .stat,
-.dark .content:has(.table-card) .stat {
-  border-color: #253247;
-  background: linear-gradient(145deg, #111c2d 0%, #0d1726 100%);
-  box-shadow: 0 14px 38px rgba(0,0,0,.20);
-}
-
-.dark-mode .content:has(.table-card) .stat strong,
-.dark .content:has(.table-card) .stat strong {
-  color: #f8fafc;
-}
-
-.dark-mode .content:has(.table-card) .stat span,
-.dark .content:has(.table-card) .stat span,
-.dark-mode .content:has(.table-card) .table-card tbody td,
-.dark .content:has(.table-card) .table-card tbody td {
-  color: #aab5c5;
-}
-
-.dark-mode .content:has(.table-card) .table-card,
-.dark .content:has(.table-card) .table-card {
-  border-color: #263449 !important;
-  background: #101a2a !important;
-}
-
-.dark-mode .content:has(.table-card) .table-card thead th,
-.dark .content:has(.table-card) .table-card thead th {
-  background: #162235;
-  border-color: #263449;
-  color: #98a2b3;
-}
-
-.dark-mode .content:has(.table-card) .table-card tbody td,
-.dark .content:has(.table-card) .table-card tbody td {
-  border-color: #202d40;
-}
-
-.dark-mode .content:has(.table-card) .table-card tbody td:nth-child(2),
-.dark .content:has(.table-card) .table-card tbody td:last-child,
-.dark .content:has(.table-card) .table-card tbody td:nth-child(2),
-.dark .content:has(.table-card) .table-card tbody td:last-child {
-  color: #f8fafc;
-}
-
-.dark-mode .content:has(.table-card) .table-card tbody tr:hover,
-.dark .content:has(.table-card) .table-card tbody tr:hover {
-  background: #142238;
-}
-
-.dark-mode .content:has(.table-card) .mini-progress,
-.dark .content:has(.table-card) .mini-progress {
-  background: #253247;
-}
+.content:has(.table-card) .table-card tbody tr:first-child td:first-child { color: #6941c6; font-size: 15px; }
+.content:has(.table-card) .table-card tbody tr:first-child td:nth-child(2) { font-size: 13px; }
+.content:has(.table-card) .mini-progress { width: 100%; min-width: 100px; height: 8px; overflow: hidden; border-radius: 999px; background: #e9eef5; }
+.content:has(.table-card) .mini-progress i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2f6fed 0%, #7aa4f7 100%); box-shadow: 0 2px 8px rgba(47,111,237,.22); }
+.content:has(.table-card) .table-card tbody td:last-child { color: #101828; font-weight: 850; white-space: nowrap; }
+.content:has(.table-card) .table-card tbody td:last-child small { color: #98a2b3; font-weight: 700; }
+.content:has(.table-card) .history-empty { min-height: 230px; display: grid; place-items: center; padding: 40px; color: #667085; font-size: 13px; text-align: center; }
 
 @media (max-width: 900px) {
-  .content:has(.table-card) .stats {
-    grid-template-columns: 1fr;
-  }
-
-  .content:has(.table-card) .table-card {
-    overflow-x: auto;
-  }
-
-  .content:has(.table-card) .table-card table {
-    min-width: 820px;
-  }
+  .content:has(.table-card) .stats { grid-template-columns: 1fr; }
+  .content:has(.table-card) .table-card { overflow-x: auto; }
+  .content:has(.table-card) .table-card table { min-width: 820px; }
 }
 
 @media (max-width: 600px) {
-  .content:has(.table-card) .page-heading {
-    align-items: flex-start;
-  }
-
-  .content:has(.table-card) .stat {
-    min-height: 102px;
-    padding: 18px;
-  }
+  .content:has(.table-card) .page-heading { align-items: flex-start; }
+  .content:has(.table-card) .stat { min-height: 102px; padding: 18px; }
 }
