@@ -1,0 +1,31 @@
+/* PLERD ScoreBoard — fixed original light appearance */
+html, body { color-scheme: light !important; }
+body { color:#1B1F27 !important; background:#f5f7fb !important; }
+.app-shell { background:#f5f7fb !important; color:#1B1F27 !important; }
+.main { background:radial-gradient(circle at 75% 0%,rgba(234,241,254,.55),transparent 28%),#f5f7fb !important; color:#1B1F27 !important; }
+.sidebar { background:rgba(255,255,255,.96) !important; border-color:#E7E9EE !important; color:#1B1F27 !important; box-shadow:none !important; }
+.topbar { background:rgba(255,255,255,.9) !important; border-color:rgba(231,233,238,.9) !important; color:#303640 !important; }
+.card,.stats,.settings-row,.summary,.table-card,.attendance-card,.rubric-list,.history-list,.attendance-list,.leader-card { background:#fff !important; border-color:#E6E9EF !important; color:#1B1F27 !important; }
+.brand strong,.page-heading h1,.breadcrumb strong,.settings-row strong,.summary h3,.section-title h2,.rubric-title h2,.history-head h2,.empty-state h2 { color:#242a33 !important; }
+.brand span,.page-heading p,.breadcrumb,.settings-row span,.summary>p,.stat span,.section-title p,.rubric-title p,.history-head p,.attendance-toolbar p { color:#6B7280 !important; }
+.nav-item { color:#626a76 !important; background:transparent !important; border-color:transparent !important; }
+.nav-item:hover { background:#f7f8fa !important; border-color:#eef0f4 !important; color:#626a76 !important; }
+.nav-item.active.blue { background:#EAF1FE !important; border-color:#dce8fd !important; color:#2F6FED !important; }
+.nav-item.active.purple { background:#F0ECFF !important; border-color:#e7e0ff !important; color:#7C5CFC !important; }
+.search,.attendance-search { background:#fafbfc !important; border-color:#E4E7EC !important; color:#6B7280 !important; }
+.search kbd { background:#fff !important; border-color:#E1E4EA !important; color:#9CA3AF !important; }
+.eval-card select,.eval-card textarea,.readonly,.score-control input,.modal input { background:#fff !important; color:#272c34 !important; border-color:#DDE1E7 !important; }
+.criterion,.history-row,.attendance-row,.rubric-title,.history-block { border-color:#E7E9EE !important; }
+.criterion:hover,.attendance-row:hover { background:#fafbfe !important; }
+.tabs button { color:#6B7280 !important; }
+.tabs button.selected { background:#fff !important; color:#242a33 !important; border-color:#E7E9EE !important; }
+.btn.secondary { background:#fff !important; color:#4f5763 !important; border-color:#DDE1E7 !important; }
+.summary-icon { background:#EAF1FE !important; color:#2F6FED !important; }
+.stat { border-color:#E7E9EE !important; }
+.settings-row:before { background:#eef4ff !important; color:#2f6fed !important; }
+.settings-row .commission-pill { color:#7c5cfc !important; background:#f2efff !important; border-color:#e7e1ff !important; }
+.empty-state { color:#6B7280 !important; }
+.error-banner { color:#b9382f !important; background:#FDECEA !important; border-color:#f5d0cc !important; }
+.modal-backdrop { background:#141c286b !important; }
+.modal { background:#fff !important; color:#1B1F27 !important; border-color:#E6E9EF !important; }
+.table-card tbody tr:hover { background:#f8fbff !important; }
