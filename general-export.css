@@ -1,0 +1,3 @@
+.general-export-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.general-export-actions .export-btn{min-width:72px;justify-content:center;font-weight:800}.general-export-actions .export-btn.excel{background:#edf7f0;color:#23663c;border:1px solid #cfe8d5}.general-export-actions .export-btn.pdf{background:#fff1f1;color:#a43d3d;border:1px solid #f1d2d2}.general-export-actions .export-btn:hover{transform:translateY(-1px)}
+@media(max-width:900px){.general-export-actions{width:100%}.general-export-actions .export-btn{flex:1}}
+@media print{.general-export-actions,.general-actions{display:none!important}.general-page{padding:0!important}.general-card{box-shadow:none!important;border:0!important}.general-table-wrap{overflow:visible!important}}
