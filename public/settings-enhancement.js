@@ -1,8 +1,19 @@
 (() => {
-  const KEY = 'r17-settings-v1';
-  const defaults = { theme: 'system', density: 'comfortable', animations: true, showStats: true, showPositions: true, showAverages: true, showProgress: true, order: 'score' };
-  const load = () => { try { return { ...defaults, ...(JSON.parse(localStorage.getItem(KEY) || '{}')) }; } catch { return { ...defaults }; } };
-  const save = (settings) => { localStorage.setItem(KEY, JSON.stringify(settings)); apply(settings); render(); };
+  const KEY = 'r17-settings-v2';
+  const defaults = { theme: 'light', density: 'comfortable', animations: true, showStats: true, showPositions: true, showAverages: true, showProgress: true, order: 'score' };
+  const load = () => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(KEY) || '{}');
+      return { ...defaults, ...stored };
+    } catch {
+      return { ...defaults };
+    }
+  };
+  const save = (nextSettings) => {
+    localStorage.setItem(KEY, JSON.stringify(nextSettings));
+    apply(nextSettings);
+    render();
+  };
   let settings = load();
 
   function apply(s) {
@@ -46,14 +57,11 @@
     const heading = [...document.querySelectorAll('h1')].find(x => x.textContent.trim() === 'Configuración');
     if (!heading) return;
     const section = heading.closest('section'); if (!section) return;
-    const grid = section.querySelector('.grid-eval'); if (!grid) return;
-    if (grid.dataset.r17Enhanced === '1') return;
+    const grid = section.querySelector('.grid-eval'); if (!grid || grid.dataset.r17Enhanced === '1') return;
     grid.dataset.r17Enhanced = '1';
     const left = grid.querySelector('.eval-card'); if (!left) return;
-    const list = left.querySelector('.settings-list');
-    if (list) list.remove();
-    const oldTitle = left.querySelector('.section-title');
-    if (oldTitle) oldTitle.remove();
+    const list = left.querySelector('.settings-list'); if (list) list.remove();
+    const oldTitle = left.querySelector('.section-title'); if (oldTitle) oldTitle.remove();
     const title = document.createElement('div'); title.className = 'r17-settings-title';
     const h = document.createElement('h2'); h.textContent = 'Centro de configuración';
     const p = document.createElement('p'); p.textContent = 'Personaliza la experiencia del ScoreBoard sin modificar los datos de evaluación.';
