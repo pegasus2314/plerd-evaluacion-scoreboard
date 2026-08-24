@@ -1,0 +1,72 @@
+/* Regional 17 · select controls */
+.eval-card select,
+.r17-config-form select,
+.r17-model-select {
+  color: #273142 !important;
+  background-color: #ffffff !important;
+  -webkit-text-fill-color: #273142 !important;
+  border: 1px solid #d6dee9 !important;
+  border-radius: 10px !important;
+  min-height: 42px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 1px 2px rgba(30,41,59,.03) !important;
+}
+
+.eval-card select:hover,
+.r17-config-form select:hover,
+.r17-model-select:hover {
+  border-color: #b8c7da !important;
+  background-color: #ffffff !important;
+}
+
+.eval-card select:focus,
+.r17-config-form select:focus,
+.r17-model-select:focus {
+  border-color: #7ea4e8 !important;
+  box-shadow: 0 0 0 3px rgba(47,111,237,.10) !important;
+  outline: none !important;
+}
+
+.eval-card select option,
+.r17-config-form select option,
+.r17-model-select option {
+  color: #273142 !important;
+  background: #ffffff !important;
+  padding: 10px;
+}
+
+/* Distrito / modelo: clearer field treatment */
+.r17-config-form label {
+  color: #475467 !important;
+  font-size: 10px !important;
+}
+
+.r17-config-form select {
+  padding: 10px 38px 10px 12px !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
+  min-height: 44px !important;
+  line-height: 1.25 !important;
+}
+
+/* Comisión selector in evaluation */
+.eval-card label select {
+  padding: 10px 38px 10px 12px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  min-height: 44px !important;
+}
+
+/* Model selector in top bar */
+.r17-model-select {
+  min-height: 38px !important;
+  height: 38px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 0 34px 0 12px !important;
+  color: #273142 !important;
+}
+
+/* Native option rendering fallback for Chromium */
+select, select option {
+  color-scheme: light !important;
+}
