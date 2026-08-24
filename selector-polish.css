@@ -1,9 +1,10 @@
 .eval-card select,
 .r17-config-form select,
-.r17-model-select {
+.r17-model-select,
+.r17-form select {
   appearance: none;
   -webkit-appearance: none;
-  min-height: 44px;
+  min-height: 44px !important;
   padding: 0 42px 0 13px !important;
   border: 1px solid #D8DEE8 !important;
   border-radius: 10px !important;
@@ -14,40 +15,97 @@
   background-repeat: no-repeat;
   color: #202938 !important;
   font-size: 12px !important;
-  font-weight: 650;
+  font-weight: 650 !important;
   box-shadow: 0 2px 8px rgba(25, 39, 62, .035);
   transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
 }
 .eval-card select:hover,
 .r17-config-form select:hover,
-.r17-model-select:hover {
+.r17-model-select:hover,
+.r17-form select:hover {
   border-color: #B7C4D8 !important;
 }
 .eval-card select:focus,
 .r17-config-form select:focus,
-.r17-model-select:focus {
+.r17-model-select:focus,
+.r17-form select:focus {
   border-color: #78A0EA !important;
   box-shadow: 0 0 0 4px rgba(47, 111, 237, .09) !important;
   outline: none !important;
 }
 .eval-card select option,
 .r17-config-form select option,
-.r17-model-select option {
+.r17-model-select option,
+.r17-form select option {
   background: #FFFFFF !important;
   color: #202938 !important;
   padding: 10px;
 }
 
-/* Distrito: selector protagonista dentro de Configuración */
+/* Distrito: bloque protagonista del formulario de modelo */
+.r17-form label:has(#m-district) {
+  position: relative;
+  grid-column: 1 / -1;
+  padding: 15px 16px 16px;
+  border: 1px solid #DCE6F2;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #F8FBFF 0%, #FFFFFF 100%);
+  box-shadow: 0 8px 20px rgba(39, 70, 106, .055);
+}
+.r17-form label:has(#m-district)::before {
+  content: 'DISTRITO EDUCATIVO';
+  display: block;
+  margin-bottom: 8px;
+  color: #2F6FED;
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: .12em;
+}
+.r17-form label:has(#m-district)::after {
+  content: 'Selecciona el distrito al que pertenece este modelo.';
+  display: block;
+  margin-top: 7px;
+  color: #8A95A5;
+  font-size: 9px;
+  font-weight: 550;
+}
+.r17-form label:has(#m-district) select#m-district {
+  width: 100% !important;
+  min-height: 54px !important;
+  padding: 0 48px 0 15px !important;
+  border: 1px solid #C7D7EC !important;
+  border-radius: 12px !important;
+  background-color: #FFFFFF !important;
+  background-position: calc(100% - 20px) 22px, calc(100% - 15px) 22px !important;
+  font-size: 13px !important;
+  font-weight: 750 !important;
+  color: #1F2D3D !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 4px 12px rgba(42, 76, 114, .055) !important;
+}
+.r17-form label:has(#m-district) select#m-district:hover {
+  border-color: #A8BFDF !important;
+  transform: translateY(-1px);
+}
+.r17-form label:has(#m-district) select#m-district:focus {
+  border-color: #5E8FEA !important;
+  box-shadow: 0 0 0 4px rgba(47,111,237,.10), 0 6px 16px rgba(42,76,114,.08) !important;
+}
+.r17-form label:has(#m-district) select#m-district option {
+  color: #1F2D3D !important;
+  background: #FFFFFF !important;
+  font-weight: 650;
+}
+
+/* Distrito dentro de cualquier formulario de configuración */
 .r17-config-form label:has(select[name="distrito_id"]) {
   grid-column: span 2;
 }
 .r17-config-form select[name="distrito_id"] {
-  min-height: 48px !important;
+  min-height: 50px !important;
   font-size: 13px !important;
-  font-weight: 700;
-  border-color: #C9D7EA !important;
-  background-color: #FDFEFF !important;
+  font-weight: 700 !important;
+  border-color: #C7D7EC !important;
+  background-color: #FFFFFF !important;
 }
 .r17-config-form select[name="distrito_id"] option:first-child {
   color: #202938 !important;
@@ -59,6 +117,7 @@
 }
 
 @media (max-width: 850px) {
+  .r17-form label:has(#m-district),
   .r17-config-form label:has(select[name="distrito_id"]) {
     grid-column: 1 / -1;
   }
