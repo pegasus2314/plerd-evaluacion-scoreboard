@@ -59,7 +59,7 @@ async function ensureDelegateCommissionField(){
   modelLabel.insertAdjacentElement('afterend',label);
   const select=label.querySelector('select');await loadCommissionOptions(select);installAutocomplete(select);
   const name=form.querySelector('input[placeholder*="Albert"]')?.value?.trim()||'';const nuid=form.querySelector('input[placeholder*="R17-"]')?.value?.trim()||'';
-  if(/Editar delegado/i.test(form.querySelector('h2')?.textContent||'')&&name){const q=supabase.from('scoreboard_delegates').select('commission_id').eq('model_id',modelId()).eq('nombre',name);const {data}=nuid?await q.eq('nuid',nuid).maybeSingle():await q.order('created_at',{ascending:false}).limit(1).maybeSingle();if(data?.commission_id){select.value=data.commission_id;select.dispatchEvent(new Event('change',{bubbles:true));}}
+  if(/Editar delegado/i.test(form.querySelector('h2')?.textContent||'')&&name){const q=supabase.from('scoreboard_delegates').select('commission_id').eq('model_id',modelId()).eq('nombre',name);const {data}=nuid?await q.eq('nuid',nuid).maybeSingle():await q.order('created_at',{ascending:false}).limit(1).maybeSingle();if(data?.commission_id){select.value=data.commission_id;select.dispatchEvent(new Event('change',{bubbles:true}));}}
 }
 
 let pendingCommission=null;
@@ -74,6 +74,7 @@ function findEvaluationSelectors(){
 let syncingEvaluation=false;
 async function syncEvaluationCommission(){
   const {delegateSelect,commissionSelect}=findEvaluationSelectors();if(!delegateSelect||!commissionSelect||syncingEvaluation)return;syncingEvaluation=true;commissionSelect.disabled=true;commissionSelect.classList.add('r17-auto-commission');
+  const visibleInput=commissionSelect.closest('label')?.querySelector('.r17-commission-input');if(visibleInput){visibleInput.disabled=true;visibleInput.readOnly=true;visibleInput.classList.add('r17-auto-commission');}
   const id=delegateSelect.value;if(!id){commissionSelect.value='';commissionSelect.dispatchEvent(new Event('change',{bubbles:true}));syncingEvaluation=false;return;}
   const {data}=await supabase.from('scoreboard_delegates').select('commission_id').eq('id',id).maybeSingle();const value=data?.commission_id||'';commissionSelect.value=value;commissionSelect.dispatchEvent(new Event('change',{bubbles:true}));
   const label=commissionSelect.closest('label');if(label){let help=label.querySelector('.r17-auto-commission-help');if(!help){help=document.createElement('small');help.className='r17-auto-commission-help';help.style.cssText='display:block;margin-top:5px;color:#667085;font-size:10px;';label.appendChild(help);}help.textContent=value?'Comisión asignada al crear el delegado.':'Este delegado todavía no tiene una comisión asignada.';}
