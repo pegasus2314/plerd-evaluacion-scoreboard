@@ -1,3 +1,5 @@
+import '../rubric-selector.js';
+
 export const RUBRICS = {
   'santo-domingo-regional': {
     id: 'santo-domingo-regional',
