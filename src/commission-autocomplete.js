@@ -30,7 +30,7 @@ function ensureStyles() {
     .r17-commission-option:hover{background:#eef4ff;color:#2f6fed}
     .r17-commission-empty{padding:8px 9px;color:#98a2b3;font-size:10px}
     .r17-commission-select-hidden{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
-    .r17-auto-commission{background:#f8fafc!important;color:#475467!important;cursor:not-allowed!important}
+    .r17-auto-commission{background:#f8fafc!important;color:#475467!important}
     .r17-delegate-commission-help{display:block;margin-top:5px;font-size:10px;color:#667085}
   `;
   document.head.appendChild(style);
@@ -202,31 +202,14 @@ async function syncEvaluationCommission() {
   const { delegateSelect, commissionSelect } = findEvaluationSelectors();
   if (!delegateSelect || !commissionSelect || syncingEvaluation) return;
   syncingEvaluation = true;
-  commissionSelect.disabled = true;
-  commissionSelect.classList.add('r17-auto-commission');
+  // Comisión vuelve a estar habilitada para selección manual.
+  commissionSelect.disabled = false;
+  commissionSelect.classList.remove('r17-auto-commission');
   const visibleInput = commissionSelect.closest('label')?.querySelector('.r17-commission-input');
-  if (visibleInput) { visibleInput.disabled = true; visibleInput.readOnly = true; visibleInput.classList.add('r17-auto-commission'); }
-  const id = delegateSelect.value;
-  if (!id) {
-    commissionSelect.value = '';
-    commissionSelect.dispatchEvent(new Event('change', { bubbles: true }));
-    syncingEvaluation = false;
-    return;
-  }
-  const { data } = await supabase.from('scoreboard_delegates').select('commission_id').eq('id', id).maybeSingle();
-  const value = data?.commission_id || '';
-  commissionSelect.value = value;
-  commissionSelect.dispatchEvent(new Event('change', { bubbles: true }));
-  const label = commissionSelect.closest('label');
-  if (label) {
-    let help = label.querySelector('.r17-auto-commission-help');
-    if (!help) {
-      help = document.createElement('small');
-      help.className = 'r17-auto-commission-help';
-      help.style.cssText = 'display:block;margin-top:5px;color:#667085;font-size:10px;';
-      label.appendChild(help);
-    }
-    help.textContent = value ? 'Comisión asignada al crear el delegado.' : 'Este delegado todavía no tiene una comisión asignada.';
+  if (visibleInput) {
+    visibleInput.disabled = false;
+    visibleInput.readOnly = false;
+    visibleInput.classList.remove('r17-auto-commission');
   }
   syncingEvaluation = false;
 }
